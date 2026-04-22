@@ -1,5 +1,11 @@
 #!/bin/sh
 set -eu
 
-REPO_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-python "$REPO_ROOT/src/ai_code_marker/cli.py" install-hook --repo-root "$REPO_ROOT"
+# AI-GENERATED-BEGIN (by Codex)
+TOOL_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+TARGET_REPO=${1:-$(pwd)}
+TARGET_REPO=$(CDPATH= cd -- "$TARGET_REPO" && pwd)
+
+python "$TOOL_ROOT/setup.py" develop
+python -m ai_code_marker.cli install-hook --repo-root "$TARGET_REPO"
+# AI-GENERATED-END
