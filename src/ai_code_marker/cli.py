@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import Iterable
 
 
-AI_PREFIX_LABEL = "[AI\u534f\u540c]"
 AI_NOTES_REF = "refs/notes/ai"
 PENDING_ATTRIBUTION_FILE = Path(".git") / "ai-code-marker" / "staged-attribution.json"
 # AI-GENERATED-BEGIN (by Codex)
@@ -33,6 +32,9 @@ HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 # AI-GENERATED-BEGIN (by Codex)
 BEGIN_MARKER_RE = re.compile(r"^\s*(?:#|//|--|<!--)\s*AI-GENERATED-BEGIN(?:\s+\(by\s+(.+?)\))?\s*(?:-->|)$")
 END_MARKER_RE = re.compile(r"^\s*(?:#|//|--|<!--)\s*AI-GENERATED-END\s*(?:-->|)$")
+# AI-GENERATED-END
+# AI-GENERATED-BEGIN (by Codex)
+SUMMARY_LINE_RE = re.compile(r"^AI生成代码行数：\[.*\](?:，总提交代码行数：\[.*\](?:，占比：.*?(?:%，(?:AI主导|AI协同|AI辅助))?)?)?$")
 # AI-GENERATED-END
 
 
@@ -212,6 +214,10 @@ def remove_existing_metadata(lines: Iterable[str]) -> list[str]:
             line = PREFIX_RE.sub("", line)
         if any(line.startswith(f"{key}:") for key in TRAILER_KEYS):
             continue
+        # AI-GENERATED-BEGIN (by Codex)
+        if SUMMARY_LINE_RE.match(line):
+            continue
+        # AI-GENERATED-END
         cleaned.append(line)
 
     while cleaned and cleaned[-1] == "":
@@ -220,26 +226,34 @@ def remove_existing_metadata(lines: Iterable[str]) -> list[str]:
     return cleaned
 
 
+# AI-GENERATED-BEGIN (by Codex)
+def classify_commit_type(ai_ratio: float) -> str:
+    if ai_ratio > 70:
+        return "AI主导"
+    if ai_ratio >= 30:
+        return "AI协同"
+    if ai_ratio > 10:
+        return "AI辅助"
+    return ""
+
+
+# AI-GENERATED-END
 def build_commit_message(original: str, stats: Stats) -> str:
     lines = original.splitlines()
     if not lines:
         lines = [""]
 
     cleaned = remove_existing_metadata(lines)
-    subject = cleaned[0] if cleaned else ""
-    prefix = f"{AI_PREFIX_LABEL}(ai:{stats.ai_lines}/total:{stats.total_lines}/ratio:{stats.ai_ratio:.2f}%) "
-    cleaned[0] = prefix + subject
+    # AI-GENERATED-BEGIN (by Codex)
+    summary_line = f"AI生成代码行数：[{stats.ai_lines}]，总提交代码行数：[{stats.total_lines}]"
+    if stats.total_lines > 0:
+        summary_line += f"，占比：{stats.ai_ratio:.2f}%"
+        commit_type = classify_commit_type(stats.ai_ratio)
+        if commit_type:
+            summary_line += f"，{commit_type}"
 
-    trailers = [
-        "",
-        f"AI-Code-Lines: {stats.ai_lines}",
-        f"AI-Total-Lines: {stats.total_lines}",
-        f"AI-Code-Ratio: {stats.ai_ratio:.2f}%",
-        f"AI-Tools: {', '.join(stats.tools) if stats.tools else 'none'}",
-        f"AI-Files: {', '.join(stats.files) if stats.files else 'none'}",
-    ]
-
-    return "\n".join(cleaned + trailers) + "\n"
+    return "\n".join(cleaned + ["", summary_line]) + "\n"
+    # AI-GENERATED-END
 
 
 # AI-GENERATED-BEGIN (by Codex)

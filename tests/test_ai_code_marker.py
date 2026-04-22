@@ -20,7 +20,6 @@ from ai_code_marker import cli as marker_cli
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLI = [os.environ.get("PYTHON", "python"), "-m", "ai_code_marker.cli"]
-AI_PREFIX_LABEL = "[AI\u534f\u540c]"
 AI_NOTES_REF = "refs/notes/ai"
 
 
@@ -168,7 +167,9 @@ class AiCodeMarkerTests(unittest.TestCase):
         self.assertEqual(kwargs["encoding"], "utf-8")
         self.assertEqual(kwargs["errors"], "replace")
 
-    def test_prepare_commit_msg_adds_prefix_and_trailers(self):
+    # AI-GENERATED-BEGIN (by Codex)
+    def test_prepare_commit_msg_appends_chinese_summary_line(self):
+    # AI-GENERATED-END
         self.write_file(
             "main.py",
             """
@@ -201,12 +202,10 @@ class AiCodeMarkerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         content = msg.read_text(encoding="utf-8")
-        self.assertTrue(content.startswith(f"{AI_PREFIX_LABEL}(ai:4/total:4/ratio:100.00%) feat: add git-ai style support"))
-        self.assertIn("AI-Code-Lines: 4", content)
-        self.assertIn("AI-Total-Lines: 4", content)
-        self.assertIn("AI-Code-Ratio: 100.00%", content)
-        self.assertIn("AI-Tools: Codex", content)
-        self.assertIn("AI-Files: main.py", content)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertTrue(content.startswith("feat: add git-ai style support"))
+        self.assertIn("AI生成代码行数：[4]，总提交代码行数：[4]，占比：100.00%，AI主导", content)
+        # AI-GENERATED-END
 
     def test_prepare_commit_msg_replaces_old_metadata_in_place(self):
         self.write_file(
@@ -251,11 +250,13 @@ class AiCodeMarkerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         content = msg.read_text(encoding="utf-8")
-        self.assertIn(f"{AI_PREFIX_LABEL}(ai:2/total:2/ratio:100.00%) feat: stale", content)
-        self.assertEqual(content.count("AI-Code-Lines:"), 1)
-        self.assertIn("AI-Code-Lines: 2", content)
-        self.assertIn("AI-Tools: Tongyi-Lingma", content)
-        self.assertIn("AI-Files: src/app.py", content)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertTrue(content.startswith("feat: stale"))
+        self.assertEqual(content.count("AI生成代码行数："), 1)
+        self.assertIn("AI生成代码行数：[2]，总提交代码行数：[2]，占比：100.00%，AI主导", content)
+        self.assertNotIn("AI-Code-Lines:", content)
+        self.assertNotIn("AI-Tools:", content)
+        # AI-GENERATED-END
 
     def test_post_commit_attaches_note_to_head(self):
         self.write_file(
