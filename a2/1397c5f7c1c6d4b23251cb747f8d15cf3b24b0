@@ -1,0 +1,21 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "a21397c5f7c1c6d4b23251cb747f8d15cf3b24b0",
+  "prompts": {
+    "3675d647bd8089b2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019db2a0-14be-7553-9c7a-b18cab43250a",
+        "model": "gpt-5.4"
+      },
+      "human_author": "yangshuo",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 14,
+      "overriden_lines": 1
+    }
+  }
+}
