@@ -1,0 +1,9 @@
+README.md
+setup.py
+src/ai_code_marker/__init__.py
+src/ai_code_marker/cli.py
+src/ai_code_marker.egg-info/PKG-INFO
+src/ai_code_marker.egg-info/SOURCES.txt
+src/ai_code_marker.egg-info/dependency_links.txt
+src/ai_code_marker.egg-info/top_level.txt
+tests/test_ai_code_marker.py

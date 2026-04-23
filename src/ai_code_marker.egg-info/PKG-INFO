@@ -1,0 +1,5 @@
+Metadata-Version: 2.1
+Name: ai-code-marker
+Version: 0.1.4
+Summary: Git hook helpers for recording AI-assisted code attribution.
+Requires-Python: >=3.10
