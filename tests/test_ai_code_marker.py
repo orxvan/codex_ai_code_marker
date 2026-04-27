@@ -316,9 +316,13 @@ class AiCodeMarkerTests(unittest.TestCase):
 
         stats = self.cli("stats", "--staged", "--json")
         self.assertEqual(stats.returncode, 0, stats.stderr)
-        self.assertIn('"ai_lines": 3', stats.stdout)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertIn('"ai_lines": 5', stats.stdout)
+        # AI-GENERATED-END
         self.assertIn('"total_lines": 5', stats.stdout)
-        self.assertIn('"ai_ratio": 60.0', stats.stdout)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertIn('"ai_ratio": 100.0', stats.stdout)
+        # AI-GENERATED-END
         self.assertIn('"tool": "Codex"', stats.stdout)
 
     def test_install_hook_writes_pre_prepare_and_post_commit_hooks(self):
@@ -404,17 +408,25 @@ class AiCodeMarkerTests(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["summary"]["commit_count"], 2)
         self.assertEqual(payload["summary"]["ai_commit_count"], 1)
-        self.assertEqual(payload["summary"]["ai_lines"], 3)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["summary"]["ai_lines"], 5)
+        # AI-GENERATED-END
         self.assertEqual(payload["summary"]["total_lines"], 6)
-        self.assertEqual(payload["summary"]["ai_ratio"], 50.0)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["summary"]["ai_ratio"], 83.33)
+        # AI-GENERATED-END
         self.assertEqual(payload["summary"]["tools"], {"Codex": 1})
         self.assertEqual(len(payload["commits"]), 2)
         self.assertEqual(payload["commits"][0]["subject"], "docs: human note")
         self.assertEqual(payload["commits"][0]["ai_lines"], 0)
         self.assertEqual(payload["commits"][1]["subject"], "feat: codex block")
-        self.assertEqual(payload["commits"][1]["ai_lines"], 3)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["commits"][1]["ai_lines"], 5)
+        # AI-GENERATED-END
         self.assertEqual(payload["commits"][1]["total_lines"], 5)
-        self.assertEqual(payload["commits"][1]["ai_ratio"], 60.0)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["commits"][1]["ai_ratio"], 100.0)
+        # AI-GENERATED-END
         self.assertEqual(payload["commits"][1]["tools"], ["Codex"])
 
     def test_range_report_ignores_non_json_git_note(self):
@@ -484,11 +496,17 @@ class AiCodeMarkerTests(unittest.TestCase):
         payload = json.loads(result.stdout)
         self.assertEqual(payload["summary"]["commit_count"], 1)
         self.assertEqual(payload["summary"]["ai_commit_count"], 1)
-        self.assertEqual(payload["summary"]["ai_lines"], 3)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["summary"]["ai_lines"], 5)
+        # AI-GENERATED-END
         self.assertEqual(payload["summary"]["total_lines"], 5)
-        self.assertEqual(payload["summary"]["ai_ratio"], 60.0)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["summary"]["ai_ratio"], 100.0)
+        # AI-GENERATED-END
         self.assertEqual(payload["summary"]["tools"], {"Codex": 1})
-        self.assertEqual(payload["commits"][0]["ai_lines"], 3)
+        # AI-GENERATED-BEGIN (by Codex)
+        self.assertEqual(payload["commits"][0]["ai_lines"], 5)
+        # AI-GENERATED-END
         self.assertEqual(payload["commits"][0]["tools"], ["Codex"])
         # AI-GENERATED-END
 

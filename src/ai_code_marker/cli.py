@@ -423,9 +423,18 @@ def build_pending_payload_from_markers(changes: list[dict], model: str | None = 
         if begin_match:
             in_ai = True
             tool = tool or begin_match.group(1) or default_tool()
+            # AI-GENERATED-BEGIN (by Codex)
+            files.setdefault(change["file"], [])
+            files[change["file"]].append(change["line_number"])
+            # AI-GENERATED-END
             continue
 
         if END_MARKER_RE.match(change["content"]):
+            # AI-GENERATED-BEGIN (by Codex)
+            if in_ai:
+                files.setdefault(change["file"], [])
+                files[change["file"]].append(change["line_number"])
+            # AI-GENERATED-END
             in_ai = False
             continue
 
