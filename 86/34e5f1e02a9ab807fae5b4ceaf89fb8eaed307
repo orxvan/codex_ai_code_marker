@@ -1,0 +1,31 @@
+操作文档.md
+  s_aa625e3c7b3100::t_d74de23ba38cb3 25-26,88,101,106,113
+src/ai_code_marker/cli.py
+  s_aa625e3c7b3100::t_4ba1fefba8433c 19,560,774
+  s_aa625e3c7b3100::t_1d28422eba6b91 33,35,442-444
+  s_aa625e3c7b3100::t_a2a25cab44ce71 412-427
+templates/CLAUDE.md
+  s_aa625e3c7b3100::t_7e4241921e71e9 4
+README.md
+  s_aa625e3c7b3100::t_065802bb97c041 92,103
+tests/test_ai_code_marker.py
+  s_aa625e3c7b3100::t_e29c38df9821a4 125,147,156,310,314,326
+  s_aa625e3c7b3100::t_0234e9c0e24b55 328-355
+  s_aa625e3c7b3100::t_2a58cba6419f97 447,459,535,539
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8634e5f1e02a9ab807fae5b4ceaf89fb8eaed307",
+  "prompts": {},
+  "sessions": {
+    "s_aa625e3c7b3100": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e7e5e-409f-7ed1-8806-9c2ec554e8ac",
+        "model": "gpt-5.5"
+      },
+      "human_author": "orxvan <orxvan@qq.com>"
+    }
+  }
+}
