@@ -16,7 +16,7 @@ from typing import Iterable
 AI_NOTES_REF = "refs/notes/ai"
 PENDING_ATTRIBUTION_FILE = Path(".git") / "ai-code-marker" / "staged-attribution.json"
 # AI-GENERATED-BEGIN (by Codex)
-DEFAULT_TOOL = "Codex"
+DEFAULT_TOOL = "AI"
 DEFAULT_TOOL_ENV = "AI_CODE_MARKER_TOOL"
 DEFAULT_MODEL_ENV = "AI_CODE_MARKER_MODEL"
 # AI-GENERATED-END
@@ -30,8 +30,9 @@ TRAILER_KEYS = [
 PREFIX_RE = re.compile(r"^\[[^\]]+\]\(ai:\d+/total:\d+/ratio:\d+(?:\.\d+)?%\)\s+")
 HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 # AI-GENERATED-BEGIN (by Codex)
-BEGIN_MARKER_RE = re.compile(r"^\s*(?:#|//|--|<!--)\s*AI-GENERATED-BEGIN(?:\s+\(by\s+(.+?)\))?\s*(?:-->|)$")
+BEGIN_MARKER_RE = re.compile(r"^\s*(?:#|//|--|<!--)\s*AI-GENERATED-BEGIN(?P<metadata>.*?)(?:-->)?\s*$")
 END_MARKER_RE = re.compile(r"^\s*(?:#|//|--|<!--)\s*AI-GENERATED-END\s*(?:-->|)$")
+MARKER_METADATA_RE = re.compile(r"\b(?P<key>agent|tool|model|prompt)=(?P<value>.*?)(?=\s+\w+=|$)")
 # AI-GENERATED-END
 # AI-GENERATED-BEGIN (by Codex)
 SUMMARY_LINE_RE = re.compile(r"^AI生成代码行数：\[.*\](?:，总提交代码行数：\[.*\](?:，占比：.*?(?:%，(?:AI主导|AI协同|AI辅助))?)?)?$")
@@ -408,6 +409,22 @@ def insert_markers(repo_root: Path, path: str, blocks: list[tuple[int, int]], to
     return True
 
 
+def parse_begin_marker_metadata(metadata: str) -> tuple[str | None, str | None]:
+    metadata = metadata.strip()
+    if not metadata:
+        return None, None
+
+    legacy_match = re.fullmatch(r"\(by\s+(.+?)\)", metadata)
+    if legacy_match:
+        return legacy_match.group(1).strip(), None
+
+    fields = {
+        match.group("key"): match.group("value").strip()
+        for match in MARKER_METADATA_RE.finditer(metadata)
+    }
+    return fields.get("tool") or fields.get("agent"), fields.get("model")
+
+
 def build_pending_payload_from_markers(changes: list[dict], model: str | None = None) -> dict | None:
     files = OrderedDict()
     tool: str | None = None
@@ -422,7 +439,9 @@ def build_pending_payload_from_markers(changes: list[dict], model: str | None = 
         begin_match = BEGIN_MARKER_RE.match(change["content"])
         if begin_match:
             in_ai = True
-            tool = tool or begin_match.group(1) or default_tool()
+            marker_tool, marker_model = parse_begin_marker_metadata(begin_match.group("metadata"))
+            tool = tool or marker_tool or default_tool()
+            model = model or marker_model
             # AI-GENERATED-BEGIN (by Codex)
             files.setdefault(change["file"], [])
             files[change["file"]].append(change["line_number"])
@@ -538,7 +557,7 @@ def cmd_stats(args: argparse.Namespace) -> int:
 
 def cmd_record_staged(args: argparse.Namespace) -> int:
     changes = parse_staged_diff()
-    payload = build_pending_payload(args.tool, args.model, changes)
+    payload = build_pending_payload(args.tool or default_tool(), args.model, changes)
     save_pending_attribution(payload)
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0
@@ -752,7 +771,7 @@ def build_parser() -> argparse.ArgumentParser:
     stats_parser.set_defaults(func=cmd_stats)
 
     record_parser = subparsers.add_parser("record-staged")
-    record_parser.add_argument("--tool", required=True)
+    record_parser.add_argument("--tool")
     record_parser.add_argument("--model")
     record_parser.set_defaults(func=cmd_record_staged)
 

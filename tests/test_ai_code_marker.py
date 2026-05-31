@@ -122,7 +122,7 @@ class AiCodeMarkerTests(unittest.TestCase):
         self.assertIn('"ai_ratio": 0.0', result.stdout)
         self.assertNotIn('"tool":', result.stdout)
 
-    def test_record_staged_counts_ai_lines_for_staged_note_ranges(self):
+    def test_record_staged_counts_ai_lines_without_tool_argument(self):
         self.write_file(
             "main.py",
             """
@@ -144,7 +144,7 @@ class AiCodeMarkerTests(unittest.TestCase):
         )
         self.stage_all()
 
-        result = self.cli("record-staged", "--tool", "Codex", "--model", "gpt-5.4")
+        result = self.cli("record-staged", "--model", "gpt-5.4")
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
@@ -153,7 +153,7 @@ class AiCodeMarkerTests(unittest.TestCase):
         self.assertIn('"ai_lines": 2', stats.stdout)
         self.assertIn('"total_lines": 2', stats.stdout)
         self.assertIn('"ai_ratio": 100.0', stats.stdout)
-        self.assertIn('"tool": "Codex"', stats.stdout)
+        self.assertIn('"tool": "AI"', stats.stdout)
 
     def test_git_helper_forces_utf8_decoding_for_git_output(self):
         completed = subprocess.CompletedProcess(args=["git", "status"], returncode=0, stdout="ok", stderr="")
@@ -307,11 +307,11 @@ class AiCodeMarkerTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         content = (self.repo / "main.py").read_text(encoding="utf-8")
-        self.assertIn("# AI-GENERATED-BEGIN (by Codex)", content)
+        self.assertIn("# AI-GENERATED-BEGIN (by AI)", content)
         self.assertIn("# AI-GENERATED-END", content)
 
         staged = self.git("show", ":main.py")
-        self.assertIn("# AI-GENERATED-BEGIN (by Codex)", staged.stdout)
+        self.assertIn("# AI-GENERATED-BEGIN (by AI)", staged.stdout)
         self.assertIn("# AI-GENERATED-END", staged.stdout)
 
         stats = self.cli("stats", "--staged", "--json")
@@ -323,7 +323,36 @@ class AiCodeMarkerTests(unittest.TestCase):
         # AI-GENERATED-BEGIN (by Codex)
         self.assertIn('"ai_ratio": 100.0', stats.stdout)
         # AI-GENERATED-END
-        self.assertIn('"tool": "Codex"', stats.stdout)
+        self.assertIn('"tool": "AI"', stats.stdout)
+
+    def test_marker_payload_parses_claude_code_agent_and_model_metadata(self):
+        changes = [
+            {
+                "file": "main.py",
+                "line_number": 1,
+                "content": "# AI-GENERATED-BEGIN agent=Claude Code model=claude-sonnet-4-5 prompt=small-change",
+                "is_blank": False,
+            },
+            {
+                "file": "main.py",
+                "line_number": 2,
+                "content": "def generated():",
+                "is_blank": False,
+            },
+            {
+                "file": "main.py",
+                "line_number": 3,
+                "content": "# AI-GENERATED-END",
+                "is_blank": False,
+            },
+        ]
+
+        payload = marker_cli.build_pending_payload_from_markers(changes)
+
+        self.assertIsNotNone(payload)
+        self.assertEqual(payload["tool"], "Claude Code")
+        self.assertEqual(payload["model"], "claude-sonnet-4-5")
+        self.assertEqual(payload["files"], [{"path": "main.py", "added_lines": [1, 2, 3]}])
 
     def test_install_hook_writes_pre_prepare_and_post_commit_hooks(self):
     # AI-GENERATED-END
@@ -415,7 +444,7 @@ class AiCodeMarkerTests(unittest.TestCase):
         # AI-GENERATED-BEGIN (by Codex)
         self.assertEqual(payload["summary"]["ai_ratio"], 83.33)
         # AI-GENERATED-END
-        self.assertEqual(payload["summary"]["tools"], {"Codex": 1})
+        self.assertEqual(payload["summary"]["tools"], {"AI": 1})
         self.assertEqual(len(payload["commits"]), 2)
         self.assertEqual(payload["commits"][0]["subject"], "docs: human note")
         self.assertEqual(payload["commits"][0]["ai_lines"], 0)
@@ -427,7 +456,7 @@ class AiCodeMarkerTests(unittest.TestCase):
         # AI-GENERATED-BEGIN (by Codex)
         self.assertEqual(payload["commits"][1]["ai_ratio"], 100.0)
         # AI-GENERATED-END
-        self.assertEqual(payload["commits"][1]["tools"], ["Codex"])
+        self.assertEqual(payload["commits"][1]["tools"], ["AI"])
 
     def test_range_report_ignores_non_json_git_note(self):
         self.write_file(
@@ -503,11 +532,11 @@ class AiCodeMarkerTests(unittest.TestCase):
         # AI-GENERATED-BEGIN (by Codex)
         self.assertEqual(payload["summary"]["ai_ratio"], 100.0)
         # AI-GENERATED-END
-        self.assertEqual(payload["summary"]["tools"], {"Codex": 1})
+        self.assertEqual(payload["summary"]["tools"], {"AI": 1})
         # AI-GENERATED-BEGIN (by Codex)
         self.assertEqual(payload["commits"][0]["ai_lines"], 5)
         # AI-GENERATED-END
-        self.assertEqual(payload["commits"][0]["tools"], ["Codex"])
+        self.assertEqual(payload["commits"][0]["tools"], ["AI"])
         # AI-GENERATED-END
 
 

@@ -1,7 +1,7 @@
 When you generate or heavily rewrite code, wrap the AI-authored region with exact markers:
 
 ```text
-# AI-GENERATED-BEGIN agent=Claude model=<model> prompt=<short-tag>
+# AI-GENERATED-BEGIN agent=Claude Code model=<model> prompt=<short-tag>
 ... generated code ...
 # AI-GENERATED-END
 ```

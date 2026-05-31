@@ -89,6 +89,7 @@ python -m ai_code_marker.cli install-hook --repo-root /path/to/target-repo
 4. hook 会自动把统计信息写入 commit message，并在提交完成后把归因信息写入 `refs/notes/ai`
 
 安装完成后，hook 会固定使用安装时的 Python 解释器执行 `python -m ai_code_marker.cli`，因此不再依赖目标仓库里的 `src` 目录，也不需要在提交时设置 `PYTHONPATH`。
+Codex 和 Claude Code 使用同一套 hook 记录行数，不需要为不同开发工具手工指定工具名。
 
 默认安装的 hook 包括：
 
@@ -99,7 +100,7 @@ python -m ai_code_marker.cli install-hook --repo-root /path/to/target-repo
 手工记录一次 staged AI 归因：
 
 ```bash
-python -m ai_code_marker.cli record-staged --tool Codex --model gpt-5.4
+python -m ai_code_marker.cli record-staged
 ```
 
 查看当前 staged 统计：
